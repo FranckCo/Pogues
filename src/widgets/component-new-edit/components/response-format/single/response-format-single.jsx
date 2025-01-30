@@ -37,6 +37,7 @@ function ResponseFormatSingle({
   path,
   formName,
   allowPrecision,
+  disableSetArbitrary,
 }) {
   const selectorPath = responseFormatType;
 
@@ -168,7 +169,24 @@ function ResponseFormatSingle({
         </Field>
       )}
       {visHint === SUGGESTER ? (
-        <SuggesterLists selectorPathParent={selectorPathComposed} />
+        <>
+          <SuggesterLists selectorPathParent={selectorPathComposed} />
+          {!disableSetArbitrary && (
+            <Field
+              name="allowArbitraryResponse"
+              component={ListRadios}
+              label={Dictionary.allowArbitraryResponse}
+              required
+              // Convert string "true"/"false" to boolean true/false when storing in Redux form
+              parse={(value) => value === 'true'}
+              // Convert true/false/undefined to string "true"/"false" when displaying the form
+              format={(value) => (value === true ? 'true' : 'false')}
+            >
+              <GenericOption value="true">{Dictionary.yes}</GenericOption>
+              <GenericOption value="false">{Dictionary.no}</GenericOption>
+            </Field>
+          )}
+        </>
       ) : (
         <CodesLists
           selectorPathParent={selectorPathComposed}
@@ -189,6 +207,7 @@ ResponseFormatSingle.propTypes = {
   path: PropTypes.string,
   formName: PropTypes.string,
   allowPrecision: PropTypes.bool,
+  disableSetArbitrary: PropTypes.bool,
 };
 
 ResponseFormatSingle.defaultProps = {
@@ -201,6 +220,7 @@ ResponseFormatSingle.defaultProps = {
   path: SINGLE_CHOICE,
   formName: DEFAULT_FORM_NAME,
   allowPrecision: true,
+  disableSetArbitrary: false,
 };
 
 const mapStateToProps = (state, { selectorPathParent, responseFormatType }) => {
@@ -212,6 +232,7 @@ const mapStateToProps = (state, { selectorPathParent, responseFormatType }) => {
     componentsStore: state.appState.activeComponentsById,
     collectedVariablesStore: state.appState.collectedVariableByQuestion,
     visHint: selector(state, `${path}visHint`),
+    allowArbitraryResponse: selector(state, `${path}allowArbitraryResponse`),
     path,
   };
 };

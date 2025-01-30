@@ -38,6 +38,43 @@ describe('component tranformations', () => {
                 questionType: 'SIMPLE',
                 type: 'QuestionType',
               },
+              {
+                Control: [],
+                Declaration: [],
+                FlowControl: [],
+                Label: ['question'],
+                Name: 'QUESTION',
+                Response: [
+                  {
+                    CollectedVariableReference: 'm6awmxim',
+                    CodeListReference: 'listId',
+                    Datatype: {
+                      typeName: 'TEXT',
+                      type: 'TextDatatypeType',
+                      MaxLength: 1,
+                      allowArbitraryResponse: true,
+                      visualizationHint: 'SUGGESTER',
+                    },
+                    id: 'm5qyf09t',
+                    mandatory: false,
+                  },
+                ],
+                ArbitraryResponse: {
+                  id: 'm6awrflv',
+                  Datatype: {
+                    type: 'TextDatatypeType',
+                    typeName: 'TEXT',
+                    MaxLength: 249,
+                  },
+                  mandatory: false,
+                  CollectedVariableReference: 'm6awei7a',
+                },
+                TargetMode: ['CAWI'],
+                depth: 2,
+                id: 'm5qy1yf9',
+                questionType: 'SINGLE_CHOICE',
+                type: 'QuestionType',
+              },
             ],
             Control: [],
             Declaration: [],
@@ -64,7 +101,7 @@ describe('component tranformations', () => {
             type: 'SequenceType',
           },
         ],
-        CodeLists: { CodeList: [] },
+        CodeLists: { CodeList: [{ id: 'listId', Label: 'listLabel' }] },
         ComponentGroup: [
           {
             Label: ['Components for page 1'],
@@ -98,6 +135,30 @@ describe('component tranformations', () => {
               id: 'khj4uvok',
               type: 'CollectedVariableType',
             },
+            {
+              id: 'm6awmxim',
+              Name: 'SUGGESTER',
+              type: 'CollectedVariableType',
+              Label: 'SUGGESTER label',
+              Datatype: {
+                type: 'TextDatatypeType',
+                Pattern: '',
+                typeName: 'TEXT',
+                MaxLength: 1,
+              },
+              CodeListReference: 'L_PRODEAP_EAU_2024',
+            },
+            {
+              id: 'm6awei7a',
+              Name: 'SUGGESTER_ARBITRARY',
+              type: 'CollectedVariableType',
+              Label: 'SUGGESTER_ARBITRARY label',
+              Datatype: {
+                type: 'TextDatatypeType',
+                typeName: 'TEXT',
+                MaxLength: 249,
+              },
+            },
           ],
         },
         agency: 'fr.insee',
@@ -109,7 +170,7 @@ describe('component tranformations', () => {
         owner: 'FAKEPERMISSION',
       };
       const questionnaireId = 'khj4mf0r';
-      const codesListsStore = {};
+      const codesListsStore = { id: { label: 'label' } };
       const iterations = [];
       const filters = [];
 
@@ -156,6 +217,35 @@ describe('component tranformations', () => {
           type: 'QUESTION',
           weight: 0,
         },
+        m5qy1yf9: {
+          TargetMode: ['CAWI'],
+          children: [],
+          collectedVariables: ['m6awmxim', 'm6awei7a'],
+          controls: {},
+          declarations: {},
+          flowControl: [],
+          dynamiqueSpecified: 'Redirections',
+          id: 'm5qy1yf9',
+          label: 'question',
+          name: 'QUESTION',
+          parent: 'khj54mjm',
+          redirections: {},
+          responseFormat: {
+            type: 'SINGLE_CHOICE',
+            SINGLE_CHOICE: {
+              visHint: 'SUGGESTER',
+              allowArbitraryResponse: true,
+              id: 'm5qyf09t',
+              mandatory: false,
+              CodesList: {
+                id: 'listId',
+              },
+            },
+          },
+          responsesClarification: undefined,
+          type: 'QUESTION',
+          weight: 1,
+        },
         khj4mf0r: {
           TargetMode: ['CAWI'],
           children: ['khj54mjm'],
@@ -174,7 +264,7 @@ describe('component tranformations', () => {
         },
         khj54mjm: {
           TargetMode: ['CAWI'],
-          children: ['khj4le7i'],
+          children: ['khj4le7i', 'm5qy1yf9'],
           controls: {},
           declarations: {},
           flowControl: [],

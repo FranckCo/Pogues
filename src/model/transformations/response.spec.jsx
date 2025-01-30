@@ -1,7 +1,10 @@
 import { format } from 'url';
 import { describe, expect, test } from 'vitest';
 
-import { DATATYPE_TYPE_FROM_NAME } from '../../constants/pogues-constants';
+import {
+  DATATYPE_TYPE_FROM_NAME,
+  DATATYPE_VIS_HINT,
+} from '../../constants/pogues-constants';
 import { stateToRemote } from './response';
 
 describe('response tranformations', () => {
@@ -164,6 +167,39 @@ describe('response tranformations', () => {
     });
 
     expect(result.Datatype.Unit).toEqual(unit);
+  });
+
+  test('when allowArbitraryResponse is defined', () => {
+    const typeName = 'TEXT';
+    const allowArbitraryResponse = true;
+
+    // Get all values of DATATYPE_VIS_HINT except 'SUGGESTER'
+    const nonSuggesterVisHints = Object.values(DATATYPE_VIS_HINT).filter(
+      (visHint) => visHint !== DATATYPE_VIS_HINT.SUGGESTER,
+    );
+
+    const resultSuggester = stateToRemote({
+      typeName,
+      id: '1',
+      visHint: DATATYPE_VIS_HINT.SUGGESTER,
+      allowArbitraryResponse,
+    });
+
+    expect(resultSuggester.Datatype.allowArbitraryResponse).toEqual(
+      allowArbitraryResponse,
+    );
+
+    // Test for all non-SUGGESTER visHint values
+    nonSuggesterVisHints.forEach((visHint) => {
+      const result = stateToRemote({
+        typeName,
+        id: '1',
+        visHint,
+        allowArbitraryResponse,
+      });
+
+      expect(result.Datatype.allowArbitraryResponse).toEqual(undefined);
+    });
   });
 
   test('when Format is defined', () => {

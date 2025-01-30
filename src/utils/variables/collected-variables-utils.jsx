@@ -1,6 +1,7 @@
 import {
   COMPONENT_TYPE,
   DATATYPE_NAME,
+  DATATYPE_VIS_HINT,
   DEFAULT_CODES_LIST_SELECTOR_PATH,
   DIMENSION_FORMATS,
   DIMENSION_TYPE,
@@ -86,6 +87,7 @@ export function getCollectedVariable(
   coordinates,
   reponseFormatValues = {},
   alternativeLabel = '',
+  arbitraryVariableOfVariableId = undefined,
 ) {
   let collectedVariable = {
     ...reponseFormatValues,
@@ -97,6 +99,11 @@ export function getCollectedVariable(
   if (coordinates) collectedVariable = { ...collectedVariable, ...coordinates };
   if (alternativeLabel)
     collectedVariable = { ...collectedVariable, ...alternativeLabel };
+  if (arbitraryVariableOfVariableId)
+    collectedVariable = {
+      ...collectedVariable,
+      arbitraryVariableOfVariableId: arbitraryVariableOfVariableId,
+    };
   return collectedVariable;
 }
 
@@ -168,8 +175,12 @@ export function getCollectedVariablesMultiple(
 
 export function getCollectedVariablesSingle(questionName, form) {
   const collectedVariables = [];
-  collectedVariables.push(
-    getCollectedVariable(questionName, `${questionName} label`, undefined, {
+
+  const mainCollectedVariable = getCollectedVariable(
+    questionName,
+    `${questionName} label`,
+    undefined,
+    {
       codeListReference: form.CodesList.id,
       codeListReferenceLabel: form.CodesList.label,
       type: TEXT,
@@ -177,9 +188,35 @@ export function getCollectedVariablesSingle(questionName, form) {
         maxLength: 1,
         pattern: '',
       },
-    }),
+    },
   );
 
+  collectedVariables.push(mainCollectedVariable);
+
+  // get arbitrary variable for suggester
+  if (
+    form.allowArbitraryResponse &&
+    form.visHint === DATATYPE_VIS_HINT.SUGGESTER
+  ) {
+    const arbitraryResponseName = `${questionName}_ARBITRARY`;
+    collectedVariables.push(
+      getCollectedVariable(
+        arbitraryResponseName,
+        `${arbitraryResponseName} label`,
+        undefined,
+        {
+          type: TEXT,
+          [TEXT]: {
+            maxLength: 249,
+          },
+        },
+        undefined,
+        mainCollectedVariable.id,
+      ),
+    );
+  }
+
+  // get clarification variables for codes lists
   form.CodesList.codes?.forEach((code) => {
     if (code.precisionid && code.precisionid !== '') {
       collectedVariables.push(

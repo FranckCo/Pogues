@@ -44,6 +44,12 @@ export function questionnaireRemoteToStores(remote, currentStores = {}) {
     remote.Child,
     collectedVariables,
   );
+
+  const arbitraryVariables = Component.getArbitraryVariablesFromRemote(
+    remote.Child,
+    collectedVariables,
+  );
+
   const codesListsStore = CodesList.remoteToStore(
     codesLists,
     variableclarification,
@@ -56,6 +62,7 @@ export function questionnaireRemoteToStores(remote, currentStores = {}) {
       responsesByVariable,
       codesListsStore,
       variableclarification,
+      arbitraryVariables,
     ),
   };
   // Components store

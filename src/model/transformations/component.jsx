@@ -174,6 +174,61 @@ export const getClarificarionfromremote = (Children, collectedVariables) => {
   return variableClarification;
 };
 
+/*
+ * Get the list of questions containing an attribute "ArbitraryResponse".
+ * Currently we only look at single response questions.
+ */
+const getArbitraryQuestions = (Children) => {
+  const arbitraryQuestions = [];
+  const childr = Children.filter((children) => children.Child?.length !== 0);
+  childr.forEach((item) => {
+    item.Child?.forEach((component) => {
+      // component is a subsequence
+      if (component.type === 'SequenceType') {
+        component.Child.forEach((question) => {
+          if (
+            // single choice question
+            question.questionType === SINGLE_CHOICE &&
+            question.ArbitraryResponse !== undefined
+          ) {
+            arbitraryQuestions.push(question);
+          }
+        });
+      } else if (
+        // component is a single choice question
+        component.questionType === SINGLE_CHOICE &&
+        component.ArbitraryResponse !== undefined
+      ) {
+        arbitraryQuestions.push(component);
+      }
+    });
+  });
+  return arbitraryQuestions;
+};
+
+/*
+ * Get the list of arbitrary variables.
+ * An arbitrary variable is the "ArbitraryResponse" object of a question,
+ * extented with "arbitraryVariableOfVariableId" which is the corresponding Response variable id.
+ */
+export const getArbitraryVariablesFromRemote = (Children) => {
+  const arbitraryVariables = [];
+  const arbitraryQuestions = getArbitraryQuestions(Children);
+
+  arbitraryQuestions.forEach((question) => {
+    // a question with arbitrary is a singleReponse question so it has only one Response
+    const responseVariableId = question.Response[0].CollectedVariableReference;
+
+    const arbitraryVariable = {
+      ...question.ArbitraryResponse,
+      arbitraryVariableOfVariableId: responseVariableId,
+    };
+    arbitraryVariables.push(arbitraryVariable);
+  });
+
+  return arbitraryVariables;
+};
+
 function remoteToVariableResponseNested(children = [], acc = {}) {
   children.forEach((child) => {
     const {
@@ -226,6 +281,7 @@ function remoteToState(remote, componentGroup, codesListsStore) {
     Control: controls,
     Response: responses,
     ClarificationQuestion: responsesClarification,
+    ArbitraryResponse: arbitraryResponse,
     ResponseStructure: responseStructure,
     Child: children,
     parent,
@@ -250,6 +306,10 @@ function remoteToState(remote, componentGroup, codesListsStore) {
       responseFinal = responseFinal.concat(clar.Response);
     });
   }
+  if (arbitraryResponse !== undefined) {
+    responseFinal.push(arbitraryResponse);
+  }
+
   const state = {
     id,
     name,
@@ -629,6 +689,37 @@ function getClarificationResponseTableQuestion(
   };
 }
 
+function getArbitraryResponse(collectedVariablesStore, collectedVariables) {
+  const collectedVariableQuestions = [];
+  Object.values(collectedVariablesStore).forEach((collec) => {
+    if (collectedVariables !== undefined) {
+      collectedVariables.forEach((variables) => {
+        if (collec.id === variables) {
+          collectedVariableQuestions.push(collec);
+        }
+      });
+    }
+  });
+
+  for (const collected of collectedVariableQuestions) {
+    const isArbitraryVariable =
+      collected.arbitraryVariableOfVariableId !== undefined;
+    // we can have only one collected variable that is an arbitrary variable
+    if (isArbitraryVariable) {
+      const responseModel = {
+        mandatory: false,
+        typeName: collected.type,
+        maxLength: collected.TEXT.maxLength,
+        collectedVariable: collected.id,
+      };
+      const arbitraryResponse = Response.stateToRemote(responseModel);
+      return arbitraryResponse;
+    }
+  }
+
+  return undefined;
+}
+
 function storeToRemoteNested(
   state,
   store,
@@ -686,8 +777,15 @@ function storeToRemoteNested(
         responsesClarification,
         flowControl,
       );
+
       remote.FlowControl = remoteclarification.flowcontrolefinal;
       remote.ClarificationQuestion = remoteclarification.ClarificationQuestion;
+
+      const remoteArbitrary = getArbitraryResponse(
+        collectedVariablesStore,
+        collectedVariables,
+      );
+      remote.ArbitraryResponse = remoteArbitrary;
     }
     if (
       responseFormat.type === MULTIPLE_CHOICE &&

@@ -39,7 +39,7 @@ describe('generateCollectedVariables', () => {
 });
 
 describe('getCollectedVariablesSingle', () => {
-  test('should return collected variables for QCM without precision in codesList', () => {
+  test('should return collected variables for QCU without precision in codesList', () => {
     const questionName = 'questionName';
     const form = {
       CodesList: {
@@ -89,7 +89,7 @@ describe('getCollectedVariablesSingle', () => {
     ]);
   });
 
-  test('should return collected variables for QCM with precision in codesList', () => {
+  test('should return collected variables for QCU with precision in codesList', () => {
     const questionName = 'questionName';
     const form = {
       CodesList: {
@@ -147,6 +147,37 @@ describe('getCollectedVariablesSingle', () => {
         name: 'precision',
         label: 'precision label',
         z: 1,
+      },
+    ]);
+  });
+
+  test('should return suggester arbitrary variable if allowArbitraryResponse', () => {
+    const questionName = 'questionName';
+    const form = {
+      allowArbitraryResponse: true,
+      visHint: 'SUGGESTER',
+      CodesList: { id: 'id', label: 'label', codes: [] },
+    };
+
+    const result = getCollectedVariablesSingle(questionName, form);
+
+    expect(result).toEqual([
+      {
+        id: result[0].id,
+        name: 'questionName',
+        label: 'questionName label',
+        codeListReference: form.CodesList.id,
+        codeListReferenceLabel: form.CodesList.label,
+        type: 'TEXT',
+        TEXT: { maxLength: 1, pattern: '' },
+      },
+      {
+        id: result[1].id,
+        name: 'questionName_ARBITRARY',
+        label: 'questionName_ARBITRARY label',
+        type: 'TEXT',
+        TEXT: { maxLength: 249 },
+        arbitraryVariableOfVariableId: result[0].id,
       },
     ]);
   });

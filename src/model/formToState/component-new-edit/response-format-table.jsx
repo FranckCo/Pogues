@@ -75,6 +75,7 @@ export const defaultMeasureForm = {
   type: SIMPLE,
   [SIMPLE]: defaultMeasureSimpleState,
   [SINGLE_CHOICE]: {
+    allowArbitraryResponse: false,
     [DEFAULT_CODES_LIST_SELECTOR_PATH]: cloneDeep(CodesListDefaultForm),
     visHint: RADIO,
   },

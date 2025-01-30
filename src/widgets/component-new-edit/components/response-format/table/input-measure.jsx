@@ -44,6 +44,7 @@ function InputMeasure({ selectorPath }) {
             selectorPathParent={selectorPath}
             showMandatory={false}
             allowPrecision={false}
+            disableSetArbitrary={true}
           />
         </View>
       </SelectorView>

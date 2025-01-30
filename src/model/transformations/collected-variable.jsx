@@ -20,6 +20,7 @@ export function remoteToStore(
   responsesByVariable,
   codesListsStore,
   variableclarification,
+  arbitraryVariables,
 ) {
   remote.forEach((variable) => {
     if (variableclarification) {
@@ -45,9 +46,26 @@ export function remoteToStore(
         }
       }
     }
+    if (arbitraryVariables) {
+      const extendedArbitraryVariable = arbitraryVariables.find(
+        (arbitraryVariable) =>
+          arbitraryVariable.CollectedVariableReference === variable.id,
+      );
+      if (extendedArbitraryVariable) {
+        variable.arbitraryVariableOfVariableId =
+          extendedArbitraryVariable.arbitraryVariableOfVariableId;
+      }
+    }
   });
   return remote.reduce((acc, ev) => {
-    const { Name: name, Label: label, CodeListReference, z, mesureLevel } = ev;
+    const {
+      Name: name,
+      Label: label,
+      CodeListReference,
+      z,
+      mesureLevel,
+      arbitraryVariableOfVariableId,
+    } = ev;
     const id = ev.id || uuid();
 
     const formatSingleRemote = remoteToStateFormatSimple({
@@ -69,6 +87,7 @@ export function remoteToStore(
         ...responsesByVariable[id],
         z,
         mesureLevel,
+        arbitraryVariableOfVariableId,
       },
     };
   }, {});

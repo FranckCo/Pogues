@@ -218,6 +218,86 @@ describe('collected variable tranformations', () => {
         output,
       );
     });
+
+    test('should add the arbitrary variables to the collected', () => {
+      const input = [
+        {
+          id: 'm6aty8by',
+          Name: 'SUGGESTER',
+          type: 'CollectedVariableType',
+          Label: 'SUGGESTER label',
+          Datatype: {
+            type: 'TextDatatypeType',
+            Pattern: '',
+            typeName: 'TEXT',
+            MaxLength: 1,
+          },
+          CodeListReference: 'id',
+        },
+        {
+          id: 'm6atzjnb',
+          Name: 'SUGGESTER_ARBITRARY',
+          type: 'CollectedVariableType',
+          Label: 'SUGGESTER_ARBITRARY label',
+          Datatype: {
+            type: 'TextDatatypeType',
+            typeName: 'TEXT',
+            MaxLength: 249,
+          },
+          arbitraryVariableOfVariableId: 'm6aty8by',
+        },
+      ];
+      const arbitraryVariables = [
+        {
+          Datatype: {
+            type: 'TextDatatypeType',
+            typeName: 'TEXT',
+            MaxLength: 249,
+          },
+          mandatory: false,
+          CollectedVariableReference: 'm6atzjnb',
+          arbitraryVariableOfVariableId: 'm6aty8by',
+        },
+      ];
+      const responsesByVariable = { m6aty8by: {} };
+      const codesListStore = { id: { label: 'label' } };
+      const variableclarification = [];
+      const output = {
+        m6aty8by: {
+          id: 'm6aty8by',
+          name: 'SUGGESTER',
+          label: 'SUGGESTER label',
+          type: TEXT,
+          codeListReference: 'id',
+          codeListReferenceLabel: 'label',
+          TEXT: {
+            maxLength: 1,
+            pattern: '',
+          },
+        },
+        m6atzjnb: {
+          id: 'm6atzjnb',
+          name: 'SUGGESTER_ARBITRARY',
+          label: 'SUGGESTER_ARBITRARY label',
+          type: TEXT,
+          codeListReferenceLabel: '',
+          TEXT: {
+            maxLength: 249,
+          },
+          arbitraryVariableOfVariableId: 'm6aty8by',
+        },
+      };
+
+      expect(
+        remoteToStore(
+          input,
+          responsesByVariable,
+          codesListStore,
+          variableclarification,
+          arbitraryVariables,
+        ),
+      ).toEqual(output);
+    });
   });
   describe('remoteToComponentState', () => {
     test('should return the state representation of a collected variable', () => {
