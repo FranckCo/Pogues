@@ -1,6 +1,8 @@
-import { useState } from 'react';
-
+import { FieldApi, useForm } from '@tanstack/react-form';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useRouteContext } from '@tanstack/react-router';
+import toast from 'react-hot-toast';
+import { z } from 'zod';
 
 import { postQuestionnaire } from '@/api/questionnaires';
 import { getAccessToken } from '@/api/utils';
@@ -11,77 +13,85 @@ import ContentHeader from '@/components/ui/ContentHeader';
 import ContentMain from '@/components/ui/ContentMain';
 import Input from '@/components/ui/Input';
 import Label from '@/components/ui/Label';
-import { TargetModes } from '@/models/questionnaires';
+import { Questionnaire, TargetModes } from '@/models/questionnaires';
 import { uid } from '@/utils/utils';
 
-const computeTargetModes = ({
-  isCAPI,
-  isCAWI,
-  isCATI,
-  isPAPI,
-}: {
-  isCAPI: boolean;
-  isCAWI: boolean;
-  isCATI: boolean;
-  isPAPI: boolean;
-}): TargetModes[] => {
-  const res = [];
-  if (isCAPI) res.push(TargetModes.CAPI);
-  if (isCAWI) res.push(TargetModes.CAWI);
-  if (isCATI) res.push(TargetModes.CATI);
-  if (isPAPI) res.push(TargetModes.PAPI);
-  return res;
-};
+interface FormValues {
+  title: string;
+  targetModes: Set<TargetModes>;
+}
+
+const questionnaireSchema = z.object({
+  title: z.string().min(1, 'You must provide a title'),
+  targetModes: z
+    .set(z.nativeEnum(TargetModes))
+    .min(1, 'You must select at least one target mode'),
+});
 
 /** Create a new questionnaire. */
 export default function CreateQuestionnaire() {
   const { user } = useRouteContext({
     from: '__root__',
   });
-
   const navigate = useNavigate();
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const mutation = useMutation({
+    mutationFn: ({
+      questionnaire,
+      stamp,
+      token,
+    }: {
+      questionnaire: Questionnaire;
+      stamp: string;
+      token: string;
+    }) => {
+      return postQuestionnaire(questionnaire, stamp, token);
+    },
+  });
 
-  const [title, setTitle] = useState<string>('');
-  const [isCAPI, setIsCAPI] = useState<boolean>(false);
-  const [isCAWI, setIsCAWI] = useState<boolean>(false);
-  const [isCATI, setIsCATI] = useState<boolean>(false);
-  const [isPAPI, setIsPAPI] = useState<boolean>(false);
+  const { Field, Subscribe, handleSubmit } = useForm<FormValues>({
+    defaultValues: {
+      title: '',
+      targetModes: new Set(),
+    },
+    validators: { onMount: questionnaireSchema, onChange: questionnaireSchema },
+    onSubmit: async ({ value }) => {
+      // Handle form submission
+      await submitQuestionnaire(value);
+      //submitQuestionnaire(value)
+    },
+  });
 
-  const onSubmit = async () => {
+  const submitQuestionnaire = async ({ title, targetModes }: FormValues) => {
     if (user) {
-      setIsLoading(true);
+      // TODO get token from tanstack router
       const token = await getAccessToken();
+      // TODO should never happen and be handled in auth route
       if (!token || user.stamp === undefined) {
-        // 401 error
-        setIsLoading(false);
-        // TODO display error
+        toast.error('Unauthorized.');
         return;
       }
       const id = uid();
       const questionnaire = {
         id,
         title,
-        targetModes: computeTargetModes({ isCAPI, isCATI, isCAWI, isPAPI }),
+        targetModes,
       };
-      const response = await postQuestionnaire(
-        questionnaire,
-        user.stamp,
-        token,
+      const promise = mutation.mutateAsync(
+        { questionnaire, stamp: user.stamp, token },
+        {
+          onSuccess: () =>
+            void navigate({
+              to: '/questionnaire/$questionnaireId',
+              params: { questionnaireId: id },
+            }),
+        },
       );
-      if (response.ok) {
-        console.info('Success');
-        // TODO display success
-        setIsLoading(false);
-        navigate({
-          to: '/questionnaire/$questionnaireId',
-          params: { questionnaireId: id },
-        });
-      } else {
-        console.error('Error', response.status);
-        // TODO display error
-      }
+      toast.promise(promise, {
+        loading: 'Loading',
+        success: 'Questionnaire created',
+        error: (err: Error) => err.toString(),
+      });
     }
   };
 
@@ -91,37 +101,46 @@ export default function CreateQuestionnaire() {
       <ContentMain>
         <div className="bg-default p-4 border border-default shadow-xl">
           <div className="grid gap-4">
-            <Input
-              label={'Titre'}
-              placeholder={'Titre'}
-              onChange={(v) => setTitle(v as string)}
-              autoFocus
-              value={title}
-              required
-            />
+            <Field name="title">
+              {(field) => (
+                <Input
+                  label={'Titre'}
+                  onChange={(v) => field.handleChange(v as string)}
+                  autoFocus
+                  value={field.state.value}
+                  required
+                />
+              )}
+            </Field>
             <div>
               <Label required>Mode de collecte</Label>
               <div className="flex gap-x-4">
-                <Checkbox
-                  label={'CAPI'}
-                  onChange={setIsCAPI}
-                  checked={isCAPI}
-                />
-                <Checkbox
-                  label={'CAWI'}
-                  onChange={setIsCAWI}
-                  checked={isCAWI}
-                />
-                <Checkbox
-                  label={'CATI'}
-                  onChange={setIsCATI}
-                  checked={isCATI}
-                />
-                <Checkbox
-                  label={'PAPI'}
-                  onChange={setIsPAPI}
-                  checked={isPAPI}
-                />
+                <Field name="targetModes">
+                  {(field) => (
+                    <>
+                      <TargetModeCheckbox
+                        label="CAPI"
+                        value={TargetModes.CAPI}
+                        field={field}
+                      />
+                      <TargetModeCheckbox
+                        label="CAWI"
+                        value={TargetModes.CAWI}
+                        field={field}
+                      />
+                      <TargetModeCheckbox
+                        label="CATI"
+                        value={TargetModes.CATI}
+                        field={field}
+                      />
+                      <TargetModeCheckbox
+                        label="PAPI"
+                        value={TargetModes.PAPI}
+                        field={field}
+                      />
+                    </>
+                  )}
+                </Field>
               </div>
             </div>
             <Input
@@ -139,16 +158,68 @@ export default function CreateQuestionnaire() {
           </div>
           <div className="flex gap-x-2 mt-6">
             <ButtonLink to={'/questionnaires'}>Annuler</ButtonLink>
-            <Button
-              type={ButtonType.Primary}
-              onClick={onSubmit}
-              isLoading={isLoading}
+            <Subscribe
+              selector={(state) => [state.canSubmit, state.isSubmitting]}
             >
-              Valider
-            </Button>
+              {([canSubmit, isSubmitting]) => (
+                <Button
+                  type={ButtonType.Primary}
+                  onClick={handleSubmit}
+                  isLoading={isSubmitting}
+                  disabled={!canSubmit}
+                >
+                  Valider
+                </Button>
+              )}
+            </Subscribe>
           </div>
         </div>
       </ContentMain>
     </div>
   );
+}
+
+function TargetModeCheckbox({
+  label,
+  value,
+  field,
+}: Readonly<{
+  label: string;
+  value: TargetModes;
+  field: FieldApi<
+    FormValues,
+    'targetModes',
+    undefined,
+    undefined,
+    Set<TargetModes>
+  >;
+}>) {
+  return (
+    <Checkbox
+      label={label}
+      checked={field.state.value.has(value)}
+      onChange={(v) =>
+        field.handleChange(changeSetValue(field.state.value, value, v))
+      }
+    />
+  );
+}
+
+function changeSetValue<T>(
+  set: Set<T>,
+  value: T,
+  shouldHaveValue: boolean,
+): Set<T> {
+  if (shouldHaveValue) return addSetValue(set, value);
+  return removeSetValue(set, value);
+}
+
+function addSetValue<T>(set: Set<T>, value: T): Set<T> {
+  return new Set(set).add(value);
+}
+
+function removeSetValue<T>(set: Set<T>, value: T): Set<T> {
+  const res = new Set(set);
+  res.delete(value);
+  return res;
 }

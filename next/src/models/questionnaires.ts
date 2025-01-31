@@ -1,7 +1,7 @@
 export type Questionnaire = {
   id: string;
   title: string;
-  targetModes: TargetModes[];
+  targetModes: Set<TargetModes>;
   lastUpdatedDate?: Date;
 };
 

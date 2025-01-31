@@ -15,6 +15,7 @@
   "dependencies": {
     "@base-ui-components/react": "^1.0.0-alpha.5",
     "@fontsource-variable/open-sans": "^5.1.1",
+    "@tanstack/react-form": "^0.41.3",
     "@tanstack/react-query": "^5.64.1",
     "@tanstack/react-router": "^1.97.1",
     "@tanstack/router-plugin": "^1.97.1",
@@ -22,6 +23,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-error-boundary": "^5.0.0",
+    "react-hot-toast": "^2.5.1",
     "vite-envs": "^4.4.10",
     "zod": "^3.24.1"
   },

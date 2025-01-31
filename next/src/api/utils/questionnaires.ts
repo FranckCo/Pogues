@@ -67,23 +67,23 @@ function computeLegacyPoguesParameters(targetModes: SurveyModeEnum[]) {
   };
 }
 
-function computeTargetModes(targetModes?: SurveyModeEnum[]): TargetModes[] {
-  if (!targetModes) return [];
+function computeTargetModes(targetModes?: SurveyModeEnum[]): Set<TargetModes> {
+  const res = new Set<TargetModes>();
+  if (!targetModes) return res;
 
-  const res: TargetModes[] = [];
   for (const targetMode of targetModes) {
     switch (targetMode) {
       case SurveyModeEnum.CAWI:
-        res.push(TargetModes.CAWI);
+        res.add(TargetModes.CAWI);
         break;
       case SurveyModeEnum.CAPI:
-        res.push(TargetModes.CAPI);
+        res.add(TargetModes.CAPI);
         break;
       case SurveyModeEnum.CATI:
-        res.push(TargetModes.CATI);
+        res.add(TargetModes.CATI);
         break;
       case SurveyModeEnum.PAPI:
-        res.push(TargetModes.PAPI);
+        res.add(TargetModes.PAPI);
         break;
     }
   }
@@ -91,7 +91,7 @@ function computeTargetModes(targetModes?: SurveyModeEnum[]): TargetModes[] {
 }
 
 function computePoguesTargetModes(
-  targetModes: TargetModes[],
+  targetModes: Set<TargetModes>,
 ): SurveyModeEnum[] {
   const res: SurveyModeEnum[] = [];
   for (const targetMode of targetModes) {

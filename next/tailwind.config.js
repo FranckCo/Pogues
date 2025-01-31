@@ -9,6 +9,7 @@ export default {
         primary: '#6750A4',
         'primary-accent': '#5c4893',
         'primary-active': '#524083',
+        'primary-disabled': '#b3a7d1',
         info: '#CCE5FF',
         disabled: '#E7E8E9',
         warning: '#FDDBC3',
