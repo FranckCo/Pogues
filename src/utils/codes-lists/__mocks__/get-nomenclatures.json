@@ -1,8 +1,8 @@
 {
   "nomenclatures": {
-    "L_ACTIVITES-2-0-0": {
-      "id": "L_ACTIVITES-2-0-0",
-      "name": "L_ACTIVITES-2-0-0",
+    "L_ACTIVITES-2-1-0": {
+      "id": "L_ACTIVITES-2-1-0",
+      "name": "L_ACTIVITES-2-1-0",
       "label": "Activités",
       "parameters": {
         "version": 1,
@@ -65,7 +65,7 @@
           "les"
         ]
       },
-      "urn": "urn:ddi:fr.insee:l_activites-2-0-0:1",
+      "urn": "urn:ddi:fr.insee:l_activites-2-1-0:1",
       "codes": []
     },
     "L_COMMUNES-2024": {
@@ -129,9 +129,9 @@
       "urn": "urn:ddi:fr.insee:l_dep-1-1-0:1",
       "codes": []
     },
-    "L_PAYS-1-2-0": {
-      "id": "L_PAYS-1-2-0",
-      "name": "L_PAYS-1-2-0",
+    "L_PAYS-2-0-0": {
+      "id": "L_PAYS-2-0-0",
+      "name": "L_PAYS-2-0-0",
       "label": "Pays",
       "parameters": {
         "version": 1,
@@ -154,12 +154,12 @@
           }
         }
       },
-      "urn": "urn:ddi:fr.insee:l_pays-1-2-0:1",
+      "urn": "urn:ddi:fr.insee:l_pays-2-0-0:1",
       "codes": []
     },
-    "L_NATIONALITE-1-2-0": {
-      "id": "L_NATIONALITE-1-2-0",
-      "name": "L_NATIONALITE-1-2-0",
+    "L_NATIONALITE-2-0-0": {
+      "id": "L_NATIONALITE-2-0-0",
+      "name": "L_NATIONALITE-2-0-0",
       "label": "Nationalités",
       "parameters": {
         "version": 1,
@@ -182,7 +182,7 @@
           }
         }
       },
-      "urn": "urn:ddi:fr.insee:l_nationalite-1-2-0:1",
+      "urn": "urn:ddi:fr.insee:l_nationalite-2-0-0:1",
       "codes": []
     },
     "L_PCS_HOMMES-2-2-0": {
